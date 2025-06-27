@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 26 23 18;
+    --color-secondary: 186 180 166;
+    --color-accent: 152 142 121;
+    --color-success: 74 122 99;
+    --color-warning: 194 159 83;
+    --color-error: 194 87 70;
+    --color-background: 250 249 246;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background font-sans text-primary;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-medium leading-tight;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium transition-colors rounded-none;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary/90;
+  }
+  
+  .btn-outline {
+    @apply border border-primary text-primary hover:bg-primary hover:text-white;
+  }
+  
+  .input {
+    @apply w-full px-4 py-3 bg-white border border-secondary/30 focus:border-accent focus:outline-none;
+  }
+  
+  .container-custom {
+    @apply px-4 mx-auto sm:px-6 lg:px-8 max-w-7xl;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

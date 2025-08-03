@@ -1,30 +1,55 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { CartContext } from '../contexts/CartContext';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from './useAuth';
+
 
 export const useCart = () => {
   const cart = useContext(CartContext);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
-  // Handler to add item to cart only if user is logged in
+  // Load cart from DB when user logs in
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (user && token) {
+        const res = await fetch('http://localhost:5000/api/cart', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        cart.setCartItems(data);
+      }
+    };
+    fetchCart();
+  }, [user, token]); 
+
+  // Save to DB on cart change
+  useEffect(() => {
+    const saveCart = async () => {
+      if (user && token) {
+        await fetch('http://localhost:5000/api/cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ items: cart.items }),
+        });
+      }
+    };
+    if (user && token) saveCart();
+  }, [cart.items, user, token]);
+
   const handleAddToCart = (
-    product: any, 
+    product: any,
     quantity: number,
     selectedSize: string,
     selectedColor: string
   ) => {
     if (!user) {
-      window.location.href = '/login'; 
+      window.location.href = '/login';
       return;
     }
-    if (cart.addToCart) {
-      cart.addToCart(product, quantity, selectedSize, selectedColor);
-    }
+    cart.addToCart(product, quantity, selectedSize, selectedColor);
   };
 
-  return {
-    ...cart,
-    user,
-    handleAddToCart,
-  };
+  return { ...cart, handleAddToCart };
 };

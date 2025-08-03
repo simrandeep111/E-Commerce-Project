@@ -7,30 +7,29 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Get return URL from location state or default to home page
+
   const from = location.state?.from?.pathname || '/';
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       setError('Email and password are required');
       return;
     }
-    
+
     setError('');
     setIsLoading(true);
-    
+
     try {
-      await login(email, password);
+      await login(email, password); // uses backend API from context
       navigate(from, { replace: true });
-    } catch (error) {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -109,8 +108,8 @@ const LoginPage: React.FC = () => {
           <div className="mt-8 text-center">
             <p className="text-gray-600 mb-4">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-accent hover:text-accent/80">
-                Sign up
+              <Link to="/register" className="text-accent hover:text-accent/80">
+                create new account
               </Link>
             </p>
             

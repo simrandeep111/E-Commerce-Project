@@ -2,10 +2,37 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
+import { useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 
+
+// const saveCart = (cart, userId) => {
+//   localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
+// };
+// const loadCart = (userId) => {
+//   const cartData = localStorage.getItem(`cart_${userId}`);
+//   return cartData ? JSON.parse(cartData) : [];
+// };
 
 const CartPage: React.FC = () => {
-  const { items, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
+ const { items, removeFromCart, updateQuantity, totalItems, totalPrice, setCartItems } = useCart();
+const { user } = useAuth();
+
+useEffect(() => {
+  if (user && setCartItems) {
+   const saved = localStorage.getItem(`cart_${user.id}`);
+if (saved) setCartItems(JSON.parse(saved));
+
+  }
+}, [user]);
+
+useEffect(() => {
+  if (user) {
+   localStorage.setItem(`cart_${user.id}`, JSON.stringify(items));
+
+  }
+}, [items, user]);
+
   
   if (items.length === 0) {
     return (

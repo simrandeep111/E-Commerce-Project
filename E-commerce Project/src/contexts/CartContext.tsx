@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { Product } from '../types';
 
-interface CartItem {
+export interface CartItem {
   product: Product;
   quantity: number;
   size: string;
@@ -16,6 +16,7 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  setCartItems: (items: CartItem[]) => void; // <-- Added here
 }
 
 export const CartContext = createContext<CartContextType>({
@@ -26,66 +27,63 @@ export const CartContext = createContext<CartContextType>({
   clearCart: () => {},
   totalItems: 0,
   totalPrice: 0,
+  setCartItems: () => {}, // <-- default no-op
 });
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
-  
+
   useEffect(() => {
-    // Load cart from localStorage
+    // Load cart from localStorage on mount (optional)
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       setItems(JSON.parse(savedCart));
     }
   }, []);
-  
-  // Save cart to localStorage whenever it changes
+
   useEffect(() => {
+    // Save cart to localStorage on change (optional)
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
-  
+
   const addToCart = (product: Product, quantity: number, size: string, color: string) => {
     setItems(prevItems => {
-      // Check if product already exists in cart with the same size and color
-      const existingItemIndex = prevItems.findIndex(
+      const existingIndex = prevItems.findIndex(
         item => item.product.id === product.id && item.size === size && item.color === color
       );
-      
-      if (existingItemIndex > -1) {
-        // Update quantity of existing item
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += quantity;
-        return updatedItems;
-      } else {
-        // Add new item
-        return [...prevItems, { product, quantity, size, color }];
+      if (existingIndex > -1) {
+        const updated = [...prevItems];
+        updated[existingIndex].quantity += quantity;
+        return updated;
       }
+      return [...prevItems, { product, quantity, size, color }];
     });
   };
-  
+
   const removeFromCart = (productId: string) => {
     setItems(prevItems => prevItems.filter(item => item.product.id !== productId));
   };
-  
+
   const updateQuantity = (productId: string, quantity: number) => {
-    setItems(prevItems => 
-      prevItems.map(item => 
+    setItems(prevItems =>
+      prevItems.map(item =>
         item.product.id === productId ? { ...item, quantity } : item
       )
     );
   };
-  
+
   const clearCart = () => {
     setItems([]);
   };
-  
-  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
-  
-  const totalPrice = items.reduce(
-    (total, item) => total + item.product.price * item.quantity, 
-    0
-  );
-  
+
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
+  // This method will be called to overwrite cart items (e.g. from backend)
+  const setCartItems = (items: CartItem[]) => {
+    setItems(items);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -96,6 +94,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         totalItems,
         totalPrice,
+        setCartItems, // <-- expose here
       }}
     >
       {children}

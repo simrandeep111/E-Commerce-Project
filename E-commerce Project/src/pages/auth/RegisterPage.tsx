@@ -11,27 +11,23 @@ const RegisterPage: React.FC = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { register } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Clear error when user types
+
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-  
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    
+
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else {
@@ -40,31 +36,30 @@ const RegisterPage: React.FC = () => {
         newErrors.email = 'Please enter a valid email address';
       }
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters long';
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
-    
     try {
       await register(formData.name, formData.email, formData.password);
-      navigate('/');
+      navigate('/'); // or dashboard
     } catch (error) {
       setErrors({ general: 'Error creating account. Please try again.' });
     } finally {
